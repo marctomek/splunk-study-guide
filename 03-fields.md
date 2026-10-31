@@ -5,20 +5,28 @@
 
 ## 3.1 Understand fields
 
+## 3.1 Understand fields
+
 **Concept:** Fields are extracted at **search time** (schema-on-read).
 
 - **Default fields:** `host`, `source`, `sourcetype`, `index`, `_time`, `_raw` (leading `_` = internal)
 - **Automatically extracted:** `key=value` pairs and fields defined for the sourcetype
 - Field **names** are case-sensitive; field **values** are not
 
-**Lab demo:** _what fields does this sourcetype have?_
+**Lab demo:** _which fields are missing from some events?_
 
 ```spl
-index=<your_index> sourcetype=<st> | fieldsummary | table field count distinct_count
+index=windowslogs | fieldsummary
+| eval percent=round(count/12256*100, 1)
+| where percent < 100
+| search field=UserID
+| table field count distinct_count percent
 ```
 
-**Result:**
-<!-- screenshot -->
+![fieldsummary for UserID](images/03-fieldsummary.png)
+
+**What it shows:** `UserID` is on only 6,021 of 12,256 events (49.1%). The other
+6,235 events have no `UserID` field at all, which matters for the next test.
 
 ## 3.2 Use fields in searches
 
@@ -29,25 +37,31 @@ index=<your_index> sourcetype=<st> | fieldsummary | table field count distinct_c
 - Quote values with spaces: `product_name="Dream Crusher"`
 - `index` + `sourcetype` + time are the most efficient filters
 
-**Query — the `!=` vs `NOT` test:**
+**Lab demo: the `!=` vs `NOT` test**
+
+`S-1-5-18` is the Windows Local System account, the most common `UserID` value.
 
 ```spl
-index=<your_index> status!=200
-index=<your_index> NOT status=200
+index=windowslogs UserID!="S-1-5-18"
+index=windowslogs NOT UserID="S-1-5-18"
 ```
 
-**Result:**
+| Search | Events | What it returns |
+| --- | --- | --- |
+| `UserID!="S-1-5-18"` | 84 | Events that **have** a UserID that isn't Local System |
+| `NOT UserID="S-1-5-18"` | 6,319 | Those 84 **plus** the 6,235 events with no UserID |
 
-| Search | Event count |
-| --- | --- |
-| `status!=200` | |
-| `NOT status=200` | |
+![!= search](images/03-not-equal.png)
+![NOT search](images/03-not.png)
 
-**Why the counts differ:** `!=` only returns events that **have** the field.
-`NOT` also returns events with **no** `status` field at all.
+**Why the counts differ:** `!=` only matches events where the field exists.
+`NOT` matches everything that isn't a match, including events without the field.
+Check: 12,256 total − 5,937 Local System = 6,319.
+
+**Control test:** with `EventID`, which is on 100% of events, both searches
+returned the same count. The difference only shows when a field is missing from some events.
 
 **Exam trap:** this is the single most tested fields question.
-
 ## 3.3 Use the fields sidebar
 
 **Concept:**

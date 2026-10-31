@@ -37,18 +37,16 @@ sees only the previous command's output; after `stats`, raw events are gone.
 
 ## 4.3 Specify indexes in searches
 
-**Concept:** Always start with `index=`. Without it Splunk searches your role's default
-indexes. `index=a OR index=b`, `index=web*`. `index=*` is slow.
-
-**Lab demo:**
+***Lab demo:** _what data is in this environment?_
 
 ```spl
-index=* | stats count by index
+index=* | stats count by index, sourcetype
 ```
 
-**Result:**
-<!-- screenshot -->
+![indexes and sourcetypes](images/04-indexes.png)
 
+Two indexes: `windowslogs` (12,256 events, `_json`) and `vpnlogs` (2,000 events, `kv`).
+Searching one index directly (`index=windowslogs`) is faster than `index=*`.
 ## 4.4 table, rename, fields, dedup, sort
 
 | Command | What it does | Example |
