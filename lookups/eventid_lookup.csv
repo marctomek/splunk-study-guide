@@ -1,0 +1,11 @@
+EventID,log_source,description
+1,Sysmon,Process created
+3,Sysmon,Network connection
+7,Sysmon,Image loaded
+10,Sysmon,Process accessed
+12,Sysmon,Registry object added or deleted
+13,Sysmon,Registry value set
+5154,Security,Firewall permitted an app to listen on a port
+5156,Security,Firewall permitted a connection
+5158,Security,Firewall permitted a bind to a local port
+5447,Security,Firewall filter changed
